@@ -1,0 +1,66 @@
+name: 'Release Version'
+
+on:
+  pull_request:
+    branches:
+      - main
+    types: [closed]
+
+jobs:
+  bump-version:
+    runs-on: ubuntu-latest
+    if: github.event.pull_request.merged == true
+    outputs:
+      version_tag: ${{ steps.versioning.outputs.version_tag }}
+      current_commit: ${{ steps.versioning.outputs.current_commit }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.PAT }}
+
+      - name: Set up Go
+        uses: actions/setup-go@v4
+        with:
+          go-version: '1.21'
+
+      - name: Run tests
+        run: go test -v ./...
+
+      - name: Versioning
+        id: versioning
+        uses: paulhatch/semantic-version@v5.4.0
+
+      - name: Update version in go.mod
+        run: |
+          new_version=${{ steps.versioning.outputs.version_tag }}
+          # Remove 'v' prefix from version tag for go.mod
+          new_version=${new_version#v}
+          # Update the version in go.mod using sed
+          sed -i "s/^module\(.*\)$/module\1 $new_version/" go.mod
+
+      - name: Commit and push changes
+        run: |
+          git config user.name "GitHub Actions"
+          git config user.email "actions@github.com"
+          git add go.mod
+          git commit -m "build: bump version to ${{ steps.versioning.outputs.version_tag }}"
+          git push
+
+  generate-release-notes:
+    runs-on: ubuntu-latest
+    if: github.event.pull_request.merged == true
+    needs: bump-version
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Generate release notes
+        uses: ncipollo/release-action@v1
+        with:
+          generateReleaseNotes: true
+          tag: ${{ needs.bump-version.outputs.version_tag }}
+          commit: ${{ needs.bump-version.outputs.current_commit }}
