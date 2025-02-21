@@ -14,7 +14,7 @@ go get github.com/ReserveKit/reservekit-go
 package main
 import (
 "fmt"
-"github.com/yourusername/reservekit-go/pkg/reservekit"
+"github.com/ReserveKit/reservekit-go/pkg/reservekit"
 )
 func main() {
 // Create a new client
@@ -42,40 +42,3 @@ the [ReserveKit API Documentation](https://docs.reservekit.io).
 
 This project is licensed under the MIT License. See the [LICENSE](LICENSE) file
 for details.
-
-# Binaries for programs and plugins
-
-```
-*.exe
-*.exe~
-*.dll
-*.so
-*.dylib
-```
-
-# Test binary, built with `go test -c`
-
-```
-*.test
-```
-
-# Output of the go coverage tool, specifically when used with LiteIDE
-
-```
-*.out
-```
-
-# Dependency directories (remove the comment below to include it)
-
-```
-vendor/
-```
-
-# IDE specific files
-
-```
-.idea/
-.vscode/
-*.swp
-*.swo
-```
