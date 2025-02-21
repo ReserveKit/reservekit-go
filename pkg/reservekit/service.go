@@ -47,6 +47,8 @@ func NewService(client *Client, data ServiceData) *Service {
 
 // GetTimeSlots retrieves available time slots for the service
 func (s *Service) GetTimeSlots() ([]TimeSlot, error) {
+
+	fmt.Println("Getting time slots for service:", s.ID)
 	var result struct {
 		Data struct {
 			TimeSlots []TimeSlot `json:"time_slots"`
@@ -55,7 +57,7 @@ func (s *Service) GetTimeSlots() ([]TimeSlot, error) {
 
 	err := s.client.request(
 		"GET",
-		fmt.Sprintf("/services/%d/time-slots", s.ID),
+		fmt.Sprintf("/time-slots?service_id=%d", s.ID),
 		nil,
 		&result,
 	)
@@ -74,7 +76,7 @@ func (s *Service) CreateBooking(req *BookingRequest) (*Booking, error) {
 
 	err := s.client.request(
 		"POST",
-		fmt.Sprintf("/services/%d/bookings", s.ID),
+		fmt.Sprintf("/bookings?service_id=%d", s.ID),
 		req,
 		&result,
 	)

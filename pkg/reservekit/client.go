@@ -4,8 +4,8 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"io"
 	"net/http"
-	"time"
 )
 
 const (
@@ -13,24 +13,22 @@ const (
 	defaultVersion = "v1"
 )
 
-// Client represents a ReserveKit API client
+// Client represents the ReserveKit API client
 type Client struct {
 	secretKey  string
 	host       string
 	version    string
-	service    *Service
 	httpClient *http.Client
+	service    *Service
 }
 
-// NewClient creates a new ReserveKit client
+// NewClient creates a new ReserveKit API client
 func NewClient(secretKey string, opts ...Option) *Client {
 	c := &Client{
-		secretKey: secretKey,
-		host:      defaultHost,
-		version:   defaultVersion,
-		httpClient: &http.Client{
-			Timeout: 10 * time.Second,
-		},
+		secretKey:  secretKey,
+		host:       defaultHost,    // default host
+		version:    defaultVersion, // default version
+		httpClient: &http.Client{}, // default http client
 	}
 
 	// Apply options
@@ -60,16 +58,17 @@ func (c *Client) InitService(serviceID int) error {
 func (c *Client) request(method, path string, body interface{}, result interface{}) error {
 	url := fmt.Sprintf("%s/%s%s", c.host, c.version, path)
 
-	var bodyReader *bytes.Reader
+	var reqBody io.Reader
 	if body != nil {
 		bodyBytes, err := json.Marshal(body)
 		if err != nil {
 			return fmt.Errorf("failed to marshal request body: %w", err)
 		}
-		bodyReader = bytes.NewReader(bodyBytes)
+		reqBody = bytes.NewReader(bodyBytes)
 	}
 
-	req, err := http.NewRequest(method, url, bodyReader)
+	req, err := http.NewRequest(method, url, reqBody)
+
 	if err != nil {
 		return fmt.Errorf("failed to create request: %w", err)
 	}
